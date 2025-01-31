@@ -3,24 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Excel Data (Two Parameters)</title>
+    <title>Search Excel Data</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
     <h2>Search in Excel File</h2>
 
-    <input type="file" id="upload" accept=".xlsx, .xls"><br><br>
-
-    <label>Search by First Parameter:</label>
-    <input type="text" id="searchBox1" placeholder="Enter first keyword"><br><br>
-
-    <label>Search by Second Parameter:</label>
-    <input type="text" id="searchBox2" placeholder="Enter second keyword"><br><br>
-
+    <input type="file" id="upload" accept=".xlsx, .xls">
+    <input type="text" id="searchBox" placeholder="Enter item to search">
     <button onclick="searchData()">Search</button>
 
-    <h3>Search Results:</h3>
     <table border="1" id="resultTable">
         <thead>
             <tr id="tableHeader"></tr>
@@ -43,7 +36,7 @@
                 let sheet = workbook.Sheets[sheetName];
                 excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-                displayTable(excelData); // Show full data initially
+                displayTable(excelData); // Display full table initially
             };
 
             reader.readAsArrayBuffer(file);
@@ -76,16 +69,10 @@
             }
         }
 
-        // Function to search data based on two parameters
+        // Function to search data
         function searchData() {
-            let query1 = document.getElementById('searchBox1').value.toLowerCase();
-            let query2 = document.getElementById('searchBox2').value.toLowerCase();
-
-            let filteredData = excelData.filter((row, index) => {
-                if (index === 0) return false; // Skip headers
-                return row.some(cell => String(cell).toLowerCase().includes(query1)) &&
-                       row.some(cell => String(cell).toLowerCase().includes(query2));
-            });
+            let query = document.getElementById('searchBox').value.toLowerCase();
+            let filteredData = excelData.filter(row => row.some(cell => String(cell).toLowerCase().includes(query)));
 
             displayTable([excelData[0], ...filteredData]); // Keep headers
         }

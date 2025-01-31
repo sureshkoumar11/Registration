@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Excel Data (Two Parameters)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <h2>Search in Excel File</h2>
+
+    <input type="file" id="upload" accept=".xlsx, .xls"><br><br>
+
+    <label>Search by First Parameter:</label>
+    <input type="text" id="searchBox1" placeholder="Enter first keyword"><br><br>
+
+    <label>Search by Second Parameter:</label>
+    <input type="text" id="searchBox2" placeholder="Enter second keyword"><br><br>
+
+    <button onclick="searchData()">Search</button>
+
+    <h3>Search Results:</h3>
+    <table border="1" id="resultTable">
+        <thead>
+            <tr id="tableHeader"></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        let excelData = [];
+
+        // Function to read Excel file
+        document.getElementById('upload').addEventListener('change', function (event) {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+
+            reader.onload = function (e) {
+                let data = new Uint8Array(e.target.result);
+                let workbook = XLSX.read(data, { type: 'array' });
+                let sheetName = workbook.SheetNames[0];
+                let sheet = workbook.Sheets[sheetName];
+                excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                displayTable(excelData); // Show full data initially
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Function to display the table
+        function displayTable(data) {
+            let tableHeader = document.getElementById('tableHeader');
+            let tableBody = document.getElementById('tableBody');
+
+            tableHeader.innerHTML = "";
+            tableBody.innerHTML = "";
+
+            if (data.length > 0) {
+                data[0].forEach(col => {
+                    let th = document.createElement("th");
+                    th.textContent = col;
+                    tableHeader.appendChild(th);
+                });
+
+                for (let i = 1; i < data.length; i++) {
+                    let row = document.createElement("tr");
+                    data[i].forEach(cell => {
+                        let td = document.createElement("td");
+                        td.textContent = cell;
+                        row.appendChild(td);
+                    });
+                    tableBody.appendChild(row);
+                }
+            }
+        }
+
+        // Function to search data based on two parameters
+        function searchData() {
+            let query1 = document.getElementById('searchBox1').value.toLowerCase();
+            let query2 = document.getElementById('searchBox2').value.toLowerCase();
+
+            let filteredData = excelData.filter((row, index) => {
+                if (index === 0) return false; // Skip headers
+                return row.some(cell => String(cell).toLowerCase().includes(query1)) &&
+                       row.some(cell => String(cell).toLowerCase().includes(query2));
+            });
+
+            displayTable([excelData[0], ...filteredData]); // Keep headers
+        }
+    </script>
+
+</body>
+</html>
